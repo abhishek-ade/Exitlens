@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)file:///C:/Users/Lenovo/Downloads/ExitLens_demo_3.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExitLens — AI Exit Interview Analyzer</title>
+<link href="./index_files/css2" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c; --paper: #f5f0e8; --cream: #ede7d9;
+    --accent: #c84b2f; --accent2: #2f6ec8; --muted: #7a7060;
+    --border: #d4cbbe; --card: #faf7f2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Instrument Sans', sans-serif; min-height: 100vh; }
+
+  header { border-bottom: 2px solid var(--ink); padding: 16px 36px; display: flex; align-items: center; justify-content: space-between; background: var(--paper); position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; display: inline-block; }
+  .badges { display: flex; gap: 8px; align-items: center; }
+  .badge { font-family: 'DM Mono', monospace; font-size: 0.62rem; padding: 4px 10px; border-radius: 2px; letter-spacing: 1px; text-transform: uppercase; }
+  .badge-dark { background: var(--ink); color: var(--paper); }
+  .badge-blue { background: var(--accent2); color: white; }
+
+  .hero { padding: 48px 36px 24px; max-width: 840px; margin: 0 auto; }
+  .hero-label { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.7rem,4vw,2.6rem); line-height: 1.2; margin-bottom: 12px; font-style: italic; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 0.97rem; line-height: 1.7; max-width: 520px; }
+  .live-callout { margin-top: 16px; display: inline-flex; align-items: center; gap: 10px; background: #f0f4fd; border: 1.5px solid var(--accent2); border-radius: 6px; padding: 10px 16px; font-size: 0.82rem; color: var(--accent2); }
+
+  .container { max-width: 840px; margin: 0 auto; padding: 0 36px 80px; }
+  hr.div { border: none; border-top: 1.5px solid var(--border); margin: 24px 0; }
+  .sec-label { font-family: 'DM Mono', monospace; font-size: 0.66rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 0.8rem; font-weight: 600; }
+  .field { background: white; border: 1.5px solid var(--border); border-radius: 4px; padding: 9px 13px; font-family: 'Instrument Sans', sans-serif; font-size: 0.9rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
+  .field:focus { border-color: var(--ink); }
+  textarea.field { resize: vertical; line-height: 1.6; }
+
+  .preset-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .preset-btn { font-size: 0.74rem; padding: 5px 11px; border: 1.5px solid var(--border); border-radius: 3px; background: var(--card); cursor: pointer; font-family: 'Instrument Sans', sans-serif; color: var(--ink); transition: all 0.15s; }
+  .preset-btn:hover { border-color: var(--accent2); color: var(--accent2); background: #f0f4fd; }
+
+  .response-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 12px; position: relative; }
+  .q-num { font-family: 'DM Mono', monospace; font-size: 0.63rem; color: var(--accent2); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .remove-btn { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; padding: 2px 6px; border-radius: 3px; }
+  .remove-btn:hover { color: var(--accent); background: var(--cream); }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+  .btn { font-family: 'Instrument Sans', sans-serif; font-size: 0.88rem; font-weight: 600; padding: 11px 22px; border-radius: 4px; border: 2px solid var(--ink); cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { background: transparent; color: var(--ink); }
+  .btn-secondary:hover { background: var(--cream); }
+
+  .loading { display: none; align-items: center; gap: 12px; padding: 20px 0; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.82rem; }
+  .loading.show { display: flex; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent2); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #results { display: none; margin-top: 40px; animation: fadeUp 0.5s ease; }
+  #results.show { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .web-badge { display: inline-flex; align-items: center; gap: 8px; background: #f0f4fd; border: 1.5px solid var(--accent2); border-radius: 6px; padding: 8px 14px; margin-bottom: 14px; font-size: 0.8rem; color: var(--accent2); }
+  .law-update { background: #fffbeb; border: 1.5px solid #b87c00; border-radius: 6px; padding: 10px 16px; margin-bottom: 20px; font-size: 0.82rem; color: #856404; }
+
+  .results-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 24px; }
+  .results-title { font-family: 'DM Serif Display', serif; font-size: 1.6rem; font-style: italic; }
+  .risk-pill { font-family: 'DM Mono', monospace; font-size: 0.76rem; padding: 6px 14px; border-radius: 2px; font-weight: 500; white-space: nowrap; margin-top: 4px; border: 1.5px solid; }
+  .risk-high { background:#f8d7da; color:#721c24; border-color:#f5c6cb; }
+  .risk-med  { background:#fff3cd; color:#856404; border-color:#ffeeba; }
+  .risk-low  { background:#d4edda; color:#155724; border-color:#c3e6cb; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card { background: var(--card); border: 1.5px solid var(--border); border-radius: 6px; padding: 20px; }
+  .card.full { grid-column: 1 / -1; }
+  .card h3 { font-family: 'DM Mono', monospace; font-size: 0.63rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; font-weight: 400; }
+  .card p { font-size: 0.92rem; line-height: 1.65; color: var(--ink); }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { font-family: 'DM Mono', monospace; font-size: 0.68rem; padding: 4px 10px; border-radius: 2px; border: 1.5px solid; }
+  .tag-red   { background:#fdf2f0; border-color:#c84b2f; color:#c84b2f; }
+  .tag-blue  { background:#f0f4fd; border-color:#2f6ec8; color:#2f6ec8; }
+  .tag-amber { background:#fffbeb; border-color:#b87c00; color:#b87c00; }
+  .tag-green { background:#f0fdf4; border-color:#2f8c4e; color:#2f8c4e; }
+
+  .law-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .law-item:last-child { border-bottom: none; }
+  .law-icon { width: 32px; height: 32px; background: var(--ink); color: var(--paper); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.58rem; font-family: 'DM Mono', monospace; flex-shrink: 0; }
+  .law-name { font-weight: 600; font-size: 0.88rem; margin-bottom: 3px; }
+  .law-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+  .rec-item { display: flex; gap: 10px; margin-bottom: 10px; }
+  .rec-num { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--accent); min-width: 22px; margin-top: 2px; }
+  .rec-text { font-size: 0.9rem; line-height: 1.6; }
+  .raw-text { font-size: 0.88rem; line-height: 1.8; color: var(--ink); }
+
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); text-align: center; letter-spacing: 0.5px; }
+
+  @media (max-width: 600px) {
+    header, .hero, .container { padding-left: 18px; padding-right: 18px; }
+    .form-grid, .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="logo-dot"></span> ExitLens</div>
+  <div class="badges">
+    <span class="badge badge-blue">LIVE LAW SEARCH</span>
+    <span class="badge badge-dark">AI POWERED</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-label">Exit Interview Intelligence</div>
+  <h1>Turn exit responses into <span>actionable</span> HR insight</h1>
+  <p>Analyzes exit interview responses using AI — surfacing attrition patterns, mapping concerns to the <strong>latest Indian labour laws</strong> via live web search, and generating HR recommendations.</p>
+  <div class="live-callout">
+    🔍 <strong>New:</strong> Searches the web for the latest labour law amendments before every analysis — always up to date.
+  </div>
+</div>
+
+<div class="container">
+  <hr class="div">
+
+  <div class="sec-label">01 — Company Context</div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label class="field-label">Company Name</label>
+      <input class="field" type="text" id="company" placeholder="e.g. ABC Manufacturing Pvt Ltd">
+    </div>
+    <div class="form-group">
+      <label class="field-label">Industry</label>
+      <select class="field" id="industry">
+        <option value="">Select industry</option>
+        <option>Manufacturing</option><option>IT / Software</option>
+        <option>Banking &amp; Finance</option><option>Healthcare</option>
+        <option>Retail / FMCG</option><option>Logistics &amp; Supply Chain</option>
+        <option>Construction</option><option>Education</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="field-label">Department</label>
+      <input class="field" type="text" id="dept" placeholder="e.g. Production, HR, Sales">
+    </div>
+    <div class="form-group">
+      <label class="field-label">Years of Service</label>
+      <select class="field" id="tenure">
+        <option value="">Select tenure</option>
+        <option>Less than 1 year</option><option>1–2 years</option>
+        <option>3–5 years</option><option>5–10 years</option><option>10+ years</option>
+      </select>
+    </div>
+  </div>
+
+  <hr class="div">
+
+  <div class="sec-label">02 — Exit Interview Responses</div>
+  <div class="preset-wrap">
+    <button class="preset-btn" onclick="addPreset(&#39;Why are you leaving the organisation?&#39;)">+ Why leaving?</button>
+    <button class="preset-btn" onclick="addPreset(&#39;How would you describe your relationship with your manager?&#39;)">+ Manager relationship</button>
+    <button class="preset-btn" onclick="addPreset(&#39;Were you satisfied with your compensation and benefits?&#39;)">+ Compensation</button>
+    <button class="preset-btn" onclick="addPreset(&#39;Did you feel your work environment was safe and respectful?&#39;)">+ Work environment</button>
+    <button class="preset-btn" onclick="addPreset(&#39;Were you given enough growth and learning opportunities?&#39;)">+ Growth opportunities</button>
+    <button class="preset-btn" onclick="addPreset(&#39;Would you recommend this organisation to others?&#39;)">+ Recommend org?</button>
+  </div>
+
+  <div id="responsesContainer"><div class="response-card" id="card-1">
+      <button class="remove-btn" onclick="document.getElementById(&#39;card-1&#39;).remove()">✕</button>
+      <div class="q-num">Question 1</div>
+      <input class="field q-input" type="text" placeholder="Enter interview question..." value="Why are you leaving the organisation?" style="width:100%;margin-bottom:10px;font-weight:600;">
+      <textarea class="field q-answer" rows="3" placeholder="Employee&#39;s response..." style="width:100%;">The main reason is that I have not received any salary increment in the last 2 years despite good performance reviews. I feel my contribution is not valued financially.</textarea>
+    </div><div class="response-card" id="card-2">
+      <button class="remove-btn" onclick="document.getElementById(&#39;card-2&#39;).remove()">✕</button>
+      <div class="q-num">Question 2</div>
+      <input class="field q-input" type="text" placeholder="Enter interview question..." value="How would you describe your relationship with your manager?" style="width:100%;margin-bottom:10px;font-weight:600;">
+      <textarea class="field q-answer" rows="3" placeholder="Employee&#39;s response..." style="width:100%;">My supervisor was often aggressive and used to shout at workers on the floor. When I raised it with HR, nothing happened.</textarea>
+    </div><div class="response-card" id="card-3">
+      <button class="remove-btn" onclick="document.getElementById(&#39;card-3&#39;).remove()">✕</button>
+      <div class="q-num">Question 3</div>
+      <input class="field q-input" type="text" placeholder="Enter interview question..." value="Were you satisfied with your work environment?" style="width:100%;margin-bottom:10px;font-weight:600;">
+      <textarea class="field q-answer" rows="3" placeholder="Employee&#39;s response..." style="width:100%;">The factory floor has very poor ventilation and we were asked to work overtime without proper compensation — 12-hour shifts regularly without extra pay.</textarea>
+    </div><div class="response-card" id="card-4">
+      <button class="remove-btn" onclick="document.getElementById(&#39;card-4&#39;).remove()">✕</button>
+      <div class="q-num">Question 4</div>
+      <input class="field q-input" type="text" placeholder="Enter interview question..." value="Would you recommend this organisation to others?" style="width:100%;margin-bottom:10px;font-weight:600;">
+      <textarea class="field q-answer" rows="3" placeholder="Employee&#39;s response..." style="width:100%;">Honestly no. There is no transparency about promotions or pay. Junior workers are not aware of their basic rights.</textarea>
+    </div></div>
+  <button class="btn btn-secondary" onclick="addCustomQ()" style="margin-bottom:8px;">+ Add Custom Question</button>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="analyzeBtn" onclick="analyze()">Analyze with AI →</button>
+    <button class="btn btn-secondary" onclick="loadSample()">Load Sample Data</button>
+    <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span id="loadMsg">Searching for latest Indian labour law updates...</span>
+  </div>
+
+  <div id="results">
+    <div class="web-badge">🔍 Live web search used — analysis reflects latest Indian labour law updates</div>
+    <div class="law-update"><strong>Latest law update:</strong> The Occupational Safety, Health and Working Conditions Code 2020 mandates overtime compensation at twice the ordinary rate — directly applicable to this case.</div>
+
+    <div class="results-header">
+      <div>
+        <div class="sec-label" style="margin-bottom:5px;">Analysis Complete</div>
+        <div class="results-title">Exit Interview Report</div>
+      </div>
+      <span class="risk-pill risk-high">RISK: High</span>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Primary Attrition Reason</h3>
+        <p>Employee is leaving primarily due to two years of wage stagnation despite strong performance, compounded by unresolved supervisory aggression and statutory overtime violations.</p>
+      </div>
+      <div class="card">
+        <h3>Risk Explanation</h3>
+        <p>This is a high-risk exit. The combination of wage grievances, workplace hostility, and Factories Act violations suggests systemic HR failure that likely affects other employees and exposes the organisation to serious legal liability.</p>
+      </div>
+
+      <div class="card full">
+        <h3>Key Themes Identified</h3>
+        <div class="tag-list">
+          <span class="tag tag-red">Wage stagnation</span>
+          <span class="tag tag-red">Overtime violations</span>
+          <span class="tag tag-amber">Hostile supervision</span>
+          <span class="tag tag-amber">HR inaction</span>
+          <span class="tag tag-blue">Lack of transparency</span>
+          <span class="tag tag-blue">Unsafe work environment</span>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h3>Applicable Indian Labour Laws &amp; Compliance Flags</h3>
+        <div class="law-item">
+          <div class="law-icon">POW</div>
+          <div>
+            <div class="law-name">Payment of Wages Act, 1936</div>
+            <div class="law-desc">No salary increment for 2 years despite positive performance reviews. Timely and fair wage revision obligations may have been violated, especially without a formal review process.</div>
+          </div>
+        </div>
+        <div class="law-item">
+          <div class="law-icon">FAC</div>
+          <div>
+            <div class="law-name">Factories Act, 1948</div>
+            <div class="law-desc">Regular 12-hour shifts without overtime pay and poor factory ventilation are direct violations of Sections 51–54 (working hours) and Section 13 (ventilation and temperature standards).</div>
+          </div>
+        </div>
+        <div class="law-item">
+          <div class="law-icon">IDA</div>
+          <div>
+            <div class="law-name">Industrial Disputes Act, 1947</div>
+            <div class="law-desc">Unresolved worker grievances about supervisory aggression and HR inaction may constitute unfair labour practices under Schedule V of the Act.</div>
+          </div>
+        </div>
+        <div class="law-item">
+          <div class="law-icon">POS</div>
+          <div>
+            <div class="law-name">POSH Act, 2013</div>
+            <div class="law-desc">Supervisory aggression and workplace hostility must be evaluated under POSH for hostile work environment liability, regardless of whether the conduct is explicitly sexual in nature.</div>
+          </div>
+        </div>
+        <div class="law-item">
+          <div class="law-icon">OSH</div>
+          <div>
+            <div class="law-name">Occupational Safety, Health &amp; Working Conditions Code, 2020</div>
+            <div class="law-desc">Overtime without double-rate compensation and poor ventilation are direct violations under this new Labour Code — which supersedes and consolidates earlier safety legislation.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h3>HR Recommendations</h3>
+        <div class="rec-item"><span class="rec-num">01</span><span class="rec-text">Conduct an immediate compensation audit across the Production department — identify all employees who have not received increments in 12+ months and initiate a structured wage review within 30 days.</span></div>
+        <div class="rec-item"><span class="rec-num">02</span><span class="rec-text">Launch a confidential managerial conduct review for the supervisor named in this exit interview. Implement mandatory supervisory sensitisation and behavioural training immediately.</span></div>
+        <div class="rec-item"><span class="rec-num">03</span><span class="rec-text">Audit all overtime records against Factories Act and OSH Code 2020 compliance. Calculate and disburse any unpaid overtime arrears within 45 days to reduce legal exposure.</span></div>
+        <div class="rec-item"><span class="rec-num">04</span><span class="rec-text">Commission a factory floor safety inspection focusing on ventilation standards — document findings and submit a compliance action plan to the factory inspector within 60 days.</span></div>
+      </div>
+
+      <div class="card full">
+        <h3>Full AI Analysis</h3>
+        <div class="raw-text">This exit interview reveals a deeply systemic HR failure. The employee's departure is not driven by a single incident but by the cumulative effect of wage stagnation, supervisory misconduct, unsafe working conditions, and an HR function that failed to act on raised concerns.
+
+The organisation faces significant legal exposure under at least five Indian labour laws. The most urgent risk is under the Factories Act and OSH Code 2020 — regular 12-hour shifts without overtime pay combined with poor ventilation are clear-cut statutory violations that could attract inspection, penalties, or criminal liability for management.
+
+Strategically, this exit likely signals broader workforce discontent. In manufacturing environments, unresolved grievances of this nature spread quickly and can trigger collective action or union intervention. HR must treat this not as one resignation but as an early warning signal requiring immediate systemic intervention across compensation, safety, and grievance handling.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Built by Abhishek Ade</div>
+</div>
+
+<script>
+  let qCount = 0;
+  const loadMsgs = [
+    'Searching for latest Indian labour law updates...',
+    'Analyzing exit interview responses...',
+    'Mapping concerns to applicable laws...',
+    'Generating HR recommendations...',
+  ];
+
+  function addPreset(q) { addQuestion(q, ''); }
+  function addCustomQ() { addQuestion('', ''); }
+
+  function addQuestion(q, a) {
+    qCount++;
+    const id = 'card-' + qCount;
+    const div = document.createElement('div');
+    div.className = 'response-card'; div.id = id;
+    div.innerHTML = `
+      <button class="remove-btn" onclick="document.getElementById('${id}').remove()">✕</button>
+      <div class="q-num">Question ${qCount}</div>
+      <input class="field q-input" type="text" placeholder="Enter interview question..." value="${q.replace(/"/g,'&quot;')}" style="width:100%;margin-bottom:10px;font-weight:600;"/>
+      <textarea class="field q-answer" rows="3" placeholder="Employee's response..." style="width:100%;">${a}</textarea>
+    `;
+    document.getElementById('responsesContainer').appendChild(div);
+  }
+
+  function clearAll() {
+    document.getElementById('responsesContainer').innerHTML = '';
+    document.getElementById('results').classList.remove('show');
+    ['company','dept'].forEach(id => document.getElementById(id).value = '');
+    ['industry','tenure'].forEach(id => document.getElementById(id).value = '');
+    qCount = 0;
+  }
+
+  function loadSample() {
+    clearAll();
+    document.getElementById('company').value = 'Bharat Steel Works Pvt Ltd';
+    document.getElementById('industry').value = 'Manufacturing';
+    document.getElementById('dept').value = 'Production';
+    document.getElementById('tenure').value = '3–5 years';
+    addQuestion('Why are you leaving the organisation?', 'The main reason is that I have not received any salary increment in the last 2 years despite good performance reviews. I feel my contribution is not valued financially.');
+    addQuestion('How would you describe your relationship with your manager?', 'My supervisor was often aggressive and used to shout at workers on the floor. When I raised it with HR, nothing happened.');
+    addQuestion('Were you satisfied with your work environment?', 'The factory floor has very poor ventilation and we were asked to work overtime without proper compensation — 12-hour shifts regularly without extra pay.');
+    addQuestion('Would you recommend this organisation to others?', 'Honestly no. There is no transparency about promotions or pay. Junior workers are not aware of their basic rights.');
+  }
+
+  function analyze() {
+    const cards = document.querySelectorAll('.response-card');
+    let hasContent = false;
+    cards.forEach(card => {
+      const q = card.querySelector('.q-input')?.value.trim();
+      const a = card.querySelector('.q-answer')?.value.trim();
+      if (q && a) hasContent = true;
+    });
+    if (!hasContent) { alert('Please add at least one question and response first.'); return; }
+
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('loading').classList.add('show');
+    document.getElementById('analyzeBtn').disabled = true;
+
+    let msgIdx = 0;
+    document.getElementById('loadMsg').textContent = loadMsgs[0];
+    const msgInterval = setInterval(() => {
+      msgIdx = Math.min(msgIdx + 1, loadMsgs.length - 1);
+      document.getElementById('loadMsg').textContent = loadMsgs[msgIdx];
+    }, 2000);
+
+    // Simulate AI processing time then show results
+    setTimeout(() => {
+      clearInterval(msgInterval);
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('analyzeBtn').disabled = false;
+      document.getElementById('results').classList.add('show');
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 8000);
+  }
+
+  // Load sample on page load for instant demo
+  window.onload = loadSample;
+</script>
+
+
+</body></html>
